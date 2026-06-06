@@ -1,9 +1,12 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Load parent .env configuration
-dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
+// Load parent .env configuration in a robust way
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 const connectionString = process.env.VITE_DATABASE_URL || process.env.DATABASE_URL;
 

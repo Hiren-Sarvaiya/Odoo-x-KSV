@@ -9,7 +9,7 @@ import { cn } from '../lib/utils';
 export default function QuotationComparison() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { rfqs, quotations, vendors, upsertQuotation, upsertRFQ, addLog } = useData();
+  const { rfqs, quotations, vendors, upsertQuotation, upsertRFQ, addLog, submitForApproval } = useData();
   const { user } = useAuth();
   const rfq = rfqs.find((r) => r.id === id);
   const rfqQuotes = quotations.filter((q) => q.rfqId === id && q.status !== 'Rejected');
@@ -21,13 +21,22 @@ export default function QuotationComparison() {
   const lowestD = Math.min(...rfqQuotes.map((q) => q.deliveryDays));
   const lowestT = Math.min(...rfqQuotes.map((q) => q.totalAmount));
 
-  const selectWinner = (qid: string) => {
-    rfqQuotes.forEach((q) => upsertQuotation({ ...q, status: q.id === qid ? 'Selected' : 'Under Review' }));
-    upsertRFQ({ ...rfq, status: 'Under Review' });
-    const w = rfqQuotes.find((q) => q.id === qid);
-    addLog(`${vById(w?.vendorId ?? '')?.name ?? 'Vendor'} selected as winner for RFQ "${rfq.title}"`, 'approval', rfq.id);
-    toast.success('Winner selected! Sent for approval.');
-    navigate(`/rfqs/${id}`);
+  const selectWinner = async (qid: string) => {
+    try {
+      // Mark winner Selected, others Under Review
+      await Promise.all(
+        rfqQuotes.map((q) => upsertQuotation({ ...q, status: q.id === qid ? 'Selected' : 'Under Review' }))
+      );
+      await upsertRFQ({ ...rfq, status: 'Under Review' });
+      // Create approval record for Manager
+      await submitForApproval(qid);
+      const w = rfqQuotes.find((q) => q.id === qid);
+      addLog(`${vById(w?.vendorId ?? '')?.name ?? 'Vendor'} selected as winner for RFQ "${rfq.title}". Sent for approval.`, 'approval', rfq.id);
+      toast.success('Winner selected! Sent for manager approval.');
+      navigate(`/rfqs/${id}`);
+    } catch {
+      toast.error('Failed to select winner');
+    }
   };
 
   if (rfqQuotes.length === 0) return <div className="text-center py-20 text-gray-400"><p>No quotations to compare.</p><button onClick={() => navigate(-1)} className="mt-4 text-blue-600 hover:underline">Go back</button></div>;

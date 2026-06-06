@@ -1,17 +1,29 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, GitCompare } from 'lucide-react';
+import { ChevronLeft, GitCompare, Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
 import { cn } from '../lib/utils';
 
-const SC: Record<string, string> = { Submitted: 'bg-amber-100 text-amber-700', 'Under Review': 'bg-purple-100 text-purple-700', Selected: 'bg-blue-100 text-blue-700', Approved: 'bg-emerald-100 text-emerald-700', Rejected: 'bg-red-100 text-red-700' };
+const SC: Record<string, string> = {
+  // RFQ statuses
+  Open: 'bg-blue-100 text-blue-700',
+  Quoted: 'bg-amber-100 text-amber-700',
+  'Under Review': 'bg-purple-100 text-purple-700',
+  Approved: 'bg-emerald-100 text-emerald-700',
+  Closed: 'bg-gray-100 text-gray-600',
+  // Quotation statuses
+  Submitted: 'bg-amber-100 text-amber-700',
+  Selected: 'bg-blue-100 text-blue-700',
+  Rejected: 'bg-red-100 text-red-700',
+  Pending: 'bg-orange-100 text-orange-700',
+};
 
 export default function RFQDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { rfqs, quotations, vendors, upsertRFQ, upsertQuotation, addLog } = useData();
+  const { rfqs, quotations, vendors, upsertRFQ, upsertQuotation, addLog, submitForApproval } = useData();
   const { user } = useAuth();
   const rfq = rfqs.find((r) => r.id === id);
   if (!rfq) return <div className="text-center py-20 text-gray-400">RFQ not found. <button onClick={() => navigate('/rfqs')} className="text-blue-600">Go back</button></div>;
@@ -39,12 +51,19 @@ export default function RFQDetail() {
   const fmtC = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
   const fmt = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-  const selectWinner = (qid: string) => {
-    rfqQuotes.forEach((q) => upsertQuotation({ ...q, status: q.id === qid ? 'Selected' : 'Under Review' }));
-    upsertRFQ({ ...rfq, status: 'Under Review' });
-    const w = rfqQuotes.find((q) => q.id === qid);
-    addLog(`${vById(w?.vendorId ?? '')?.name ?? 'Vendor'} selected as winner for RFQ "${rfq.title}"`, 'approval', rfq.id);
-    toast.success('Winner selected! Sent for manager approval.');
+  const selectWinner = async (qid: string) => {
+    try {
+      await Promise.all(
+        rfqQuotes.map((q) => upsertQuotation({ ...q, status: q.id === qid ? 'Selected' : 'Under Review' }))
+      );
+      await upsertRFQ({ ...rfq, status: 'Under Review' });
+      await submitForApproval(qid);
+      const w = rfqQuotes.find((q) => q.id === qid);
+      addLog(`${vById(w?.vendorId ?? '')?.name ?? 'Vendor'} selected for "${rfq.title}". Sent for manager approval.`, 'approval', rfq.id);
+      toast.success('Winner selected! Sent for manager approval.');
+    } catch {
+      toast.error('Failed to select winner');
+    }
   };
 
   return (
@@ -66,6 +85,29 @@ export default function RFQDetail() {
           </div>
         </div>
         <div><p className="text-sm font-semibold text-gray-700 mb-2">Assigned Vendors</p><div className="flex flex-wrap gap-2">{rfq.assignedVendors.map((vid) => <span key={vid} className="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium">{vById(vid)?.name ?? vid}</span>)}</div></div>
+        {rfq.attachments && rfq.attachments.length > 0 && (
+          <div className="pt-4 border-t border-gray-100">
+            <p className="text-sm font-semibold text-gray-700 mb-2">Attachments</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {rfq.attachments.map((att, idx) => (
+                <a
+                  key={idx}
+                  href={att.dataUrl}
+                  download={att.name}
+                  className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors group cursor-pointer"
+                >
+                  <Paperclip className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate group-hover:text-blue-600 transition-colors">{att.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {att.size < 1024 ? `${att.size}B` : att.size < 1024 * 1024 ? `${(att.size / 1024).toFixed(1)}KB` : `${(att.size / (1024 * 1024)).toFixed(1)}MB`}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       {rfqQuotes.length > 0 && (
         <div>

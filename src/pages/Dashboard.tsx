@@ -15,10 +15,10 @@ const SC: Record<string, string> = {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { rfqs, quotations, pos, invoices, vendors } = useData();
+  const { rfqs, pos, invoices, vendors, approvals } = useData();
   const navigate = useNavigate();
 
-  const pendingApprovals = quotations.filter((q) => q.status === 'Selected').length;
+  const pendingApprovals = approvals.filter((a) => a.status === 'pending').length;
   const activeRFQs = rfqs.filter((r) => r.status === 'Open' || r.status === 'Quoted').length;
   const recentPOs = [...pos].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
   const recentInvoices = [...invoices].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);

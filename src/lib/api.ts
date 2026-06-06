@@ -1,4 +1,4 @@
-import type { User, Vendor, RFQ, Quotation, PurchaseOrder, Invoice, ActivityLog, Notification } from '../types';
+import type { User, Vendor, RFQ, Quotation, PurchaseOrder, Invoice, ActivityLog, Notification, Approval } from '../types';
 
 export function genId(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -127,6 +127,22 @@ export const db = {
       body: JSON.stringify(inv)
     });
     if (!res.ok) throw new Error('Failed to upsert invoice');
+  },
+
+  // ── Approvals ──────────────────────────────────────────────────────────────
+  async getApprovals(): Promise<Approval[]> {
+    const res = await fetch('/api/approvals');
+    if (!res.ok) throw new Error('Failed to fetch approvals');
+    return res.json();
+  },
+
+  async upsertApproval(a: Approval): Promise<void> {
+    const res = await fetch('/api/approvals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(a)
+    });
+    if (!res.ok) throw new Error('Failed to upsert approval');
   },
 
   // ── Activity Logs ─────────────────────────────────────────────────────────

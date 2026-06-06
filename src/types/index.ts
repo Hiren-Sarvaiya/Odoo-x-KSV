@@ -1,8 +1,8 @@
 export type Role = 'Admin' | 'Procurement Officer' | 'Manager' | 'Vendor';
 export type VendorStatus = 'Active' | 'Inactive' | 'Blacklisted';
 export type VendorCategory = 'IT' | 'Office Supplies' | 'Logistics' | 'Furniture' | 'Services';
-export type RFQStatus = 'Open' | 'Quoted' | 'Under Review' | 'Closed';
-export type QuotationStatus = 'Submitted' | 'Under Review' | 'Selected' | 'Approved' | 'Rejected';
+export type RFQStatus = 'Open' | 'Quoted' | 'Under Review' | 'Approved' | 'Closed';
+export type QuotationStatus = 'Submitted' | 'Under Review' | 'Selected' | 'Approved' | 'Rejected' | 'Pending';
 export type POStatus = 'Draft' | 'Issued' | 'Acknowledged' | 'Completed';
 export type InvoiceStatus = 'Draft' | 'Sent' | 'Paid' | 'Overdue';
 
@@ -44,6 +44,7 @@ export interface RFQ {
   status: RFQStatus;
   createdBy: string;
   createdAt: string;
+  attachments?: Array<{ name: string; size: number; type: string; dataUrl: string }>;
 }
 
 export interface QuotationLineItem {
@@ -110,4 +111,17 @@ export interface Notification {
   read: boolean;
   timestamp: string;
   type: ActivityLog['type'];
+}
+
+export interface Approval {
+  id: string;
+  quotationId: string;
+  rfqId: string;
+  rfqTitle: string;
+  vendorName: string;
+  totalAmount: number;
+  submittedBy: string;
+  status: 'pending' | 'approved' | 'rejected';
+  remarks: string;
+  decidedAt: string | null;
 }

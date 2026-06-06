@@ -184,6 +184,7 @@ app.get('/api/rfqs', async (req, res) => {
       assignedVendors: r.assigned_vendors || [],
       createdBy: r.created_by,
       createdAt: r.created_at,
+      attachments: r.attachments ? JSON.parse(r.attachments) : [],
       lineItems: items
         .filter(li => li.rfq_id === r.id)
         .map(li => ({
@@ -202,16 +203,16 @@ app.get('/api/rfqs', async (req, res) => {
 });
 
 app.post('/api/rfqs', async (req, res) => {
-  const { id, title, description, deadline, status, assignedVendors, createdBy, createdAt, lineItems } = req.body;
+  const { id, title, description, deadline, status, assignedVendors, createdBy, createdAt, lineItems, attachments } = req.body;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     
     await client.query(
-      `INSERT INTO rfqs (id, title, description, deadline, status, assigned_vendors, created_by, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       ON CONFLICT (id) DO UPDATE SET title=$2, description=$3, deadline=$4, status=$5, assigned_vendors=$6`,
-      [id, title, description || '', deadline, status, assignedVendors, createdBy, createdAt || new Date().toISOString()]
+      `INSERT INTO rfqs (id, title, description, deadline, status, assigned_vendors, created_by, created_at, attachments)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (id) DO UPDATE SET title=$2, description=$3, deadline=$4, status=$5, assigned_vendors=$6, attachments=$9`,
+      [id, title, description || '', deadline, status, assignedVendors, createdBy, createdAt || new Date().toISOString(), JSON.stringify(attachments || [])]
     );
     
     await client.query('DELETE FROM rfq_line_items WHERE rfq_id = $1', [id]);
@@ -294,6 +295,45 @@ app.post('/api/quotations', async (req, res) => {
     res.status(500).json({ error: err.message });
   } finally {
     client.release();
+  }
+});
+
+// ─── APPROVALS ENDPOINTS ───────────────────────────────────────────────────
+
+app.get('/api/approvals', async (req, res) => {
+  try {
+    const rows = await query('SELECT * FROM approvals ORDER BY status = \'pending\' DESC, decided_at DESC');
+    res.json(rows.map(r => ({
+      id: r.id,
+      quotationId: r.quotation_id,
+      rfqId: r.rfq_id,
+      rfqTitle: r.rfq_title,
+      vendorName: r.vendor_name,
+      totalAmount: Number(r.total_amount),
+      submittedBy: r.submitted_by,
+      status: r.status,
+      remarks: r.remarks,
+      decidedAt: r.decided_at
+    })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/approvals', async (req, res) => {
+  const { id, quotationId, rfqId, rfqTitle, vendorName, totalAmount, submittedBy, status, remarks, decidedAt } = req.body;
+  try {
+    await query(
+      `INSERT INTO approvals (id, quotation_id, rfq_id, rfq_title, vendor_name, total_amount, submitted_by, status, remarks, decided_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       ON CONFLICT (id) DO UPDATE SET status=$8, remarks=$9, decided_at=$10`,
+      [id, quotationId, rfqId, rfqTitle, vendorName, totalAmount, submittedBy, status, remarks || '', decidedAt || null]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 

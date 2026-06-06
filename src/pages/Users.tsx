@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 
 const ROLES: Role[] = ['Admin', 'Procurement Officer', 'Manager', 'Vendor'];
-const RC: Record<Role, string> = { Admin: 'bg-rose-100 text-rose-700', 'Procurement Officer': 'bg-blue-100 text-blue-700', Manager: 'bg-amber-100 text-amber-700', Vendor: 'bg-emerald-100 text-emerald-700' };
+const RC: Record<string, string> = { Admin: 'bg-rose-100 text-rose-700', 'Procurement Officer': 'bg-blue-100 text-blue-700', Manager: 'bg-amber-100 text-amber-700', Vendor: 'bg-emerald-100 text-emerald-700' };
 
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
@@ -70,7 +70,7 @@ export default function Users() {
                 <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-3.5"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">{u.name[0]}</div><span className="font-medium text-gray-800">{u.name}</span></div></td>
                   <td className="px-4 py-3.5 text-gray-600">{u.email}</td>
-                  <td className="px-4 py-3.5"><span className={cn('text-xs font-semibold px-2.5 py-1 rounded-full', RC[u.role])}>{u.role}</span></td>
+                  <td className="px-4 py-3.5"><span className={cn('text-xs font-semibold px-2.5 py-1 rounded-full', RC[u.role] ?? 'bg-gray-100 text-gray-600')}>{u.role}</span></td>
                 </tr>
               ))}
             </tbody>

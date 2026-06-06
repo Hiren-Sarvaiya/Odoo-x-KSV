@@ -87,6 +87,7 @@ export default function RFQCreate() {
       status: 'Open',
       createdBy: user?.id ?? 'system',
       createdAt: new Date().toISOString(),
+      attachments,
     };
     try {
       await upsertRFQ(rfq);

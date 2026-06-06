@@ -33,10 +33,11 @@ CREATE TABLE IF NOT EXISTS rfqs (
   title            TEXT NOT NULL,
   description      TEXT,
   deadline         TEXT NOT NULL,
-  status           TEXT NOT NULL DEFAULT 'Open' CHECK (status IN ('Draft','Open','Closed','Cancelled')),
+  status           TEXT NOT NULL DEFAULT 'open',
   assigned_vendors TEXT[],
   created_by       TEXT REFERENCES users(id) ON DELETE SET NULL,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  attachments      TEXT
 );
 
 -- RFQ LINE ITEMS
@@ -55,7 +56,7 @@ CREATE TABLE IF NOT EXISTS quotations (
   vendor_id    TEXT NOT NULL REFERENCES vendors(id) ON DELETE CASCADE,
   delivery_days INTEGER NOT NULL DEFAULT 7,
   notes        TEXT,
-  status       TEXT NOT NULL DEFAULT 'Pending' CHECK (status IN ('Pending','Approved','Rejected')),
+  status       TEXT NOT NULL DEFAULT 'submitted',
   submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   submitted_by TEXT,
   total_amount NUMERIC NOT NULL DEFAULT 0
@@ -69,6 +70,20 @@ CREATE TABLE IF NOT EXISTS quotation_line_items (
   unit_price   NUMERIC NOT NULL DEFAULT 0
 );
 
+-- APPROVALS
+CREATE TABLE IF NOT EXISTS approvals (
+  id           TEXT PRIMARY KEY,
+  quotation_id TEXT REFERENCES quotations(id) ON DELETE CASCADE,
+  rfq_id       TEXT REFERENCES rfqs(id) ON DELETE CASCADE,
+  rfq_title    TEXT NOT NULL,
+  vendor_name  TEXT NOT NULL,
+  total_amount NUMERIC NOT NULL,
+  submitted_by TEXT NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  remarks      TEXT,
+  decided_at   TEXT
+);
+
 -- PURCHASE ORDERS
 CREATE TABLE IF NOT EXISTS purchase_orders (
   id           TEXT PRIMARY KEY,
@@ -79,7 +94,7 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
   subtotal     NUMERIC NOT NULL DEFAULT 0,
   gst          NUMERIC NOT NULL DEFAULT 0,
   total        NUMERIC NOT NULL DEFAULT 0,
-  status       TEXT NOT NULL DEFAULT 'Issued' CHECK (status IN ('Draft','Issued','Delivered','Cancelled')),
+  status       TEXT NOT NULL DEFAULT 'issued',
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_by   TEXT,
   approved_by  TEXT
@@ -106,7 +121,7 @@ CREATE TABLE IF NOT EXISTS invoices (
   gst            NUMERIC NOT NULL DEFAULT 0,
   total          NUMERIC NOT NULL DEFAULT 0,
   due_date       TEXT,
-  status         TEXT NOT NULL DEFAULT 'Draft' CHECK (status IN ('Draft','Sent','Paid','Overdue')),
+  status         TEXT NOT NULL DEFAULT 'draft',
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -145,16 +160,16 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 -- Default admin user (password: admin123)
 INSERT INTO users (id, name, email, password, role) VALUES
-  ('u_admin001',  'Admin User',        'admin@erp.com',    'admin123',  'Admin'),
-  ('u_officer01', 'Sarah Johnson',     'officer@erp.com',  'officer123','Procurement Officer'),
-  ('u_finance01', 'Michael Chen',      'finance@erp.com',  'finance123','Finance Manager'),
-  ('u_vendor01',  'Vendor Portal',     'vendor@erp.com',   'vendor123', 'Vendor'),
-  ('u_manager01', 'David Williams',    'manager@erp.com',  'manager123','Manager')
+  ('1', 'Admin User',   'admin@demo.com',   'admin123',   'Admin'),
+  ('2', 'John Officer', 'officer@demo.com', 'officer123', 'Procurement Officer'),
+  ('3', 'Sara Manager', 'manager@demo.com', 'manager123', 'Manager'),
+  ('4', 'Vendor One',   'vendor@demo.com',  'vendor123',  'Vendor'),
+  ('5', 'Vendor Two',   'vendor2@demo.com', 'vendor123',  'Vendor')
 ON CONFLICT (id) DO NOTHING;
 
 -- Sample vendors
 INSERT INTO vendors (id, name, category, gst_number, email, phone, address, status, rating) VALUES
-  ('v001', 'TechSupply Co.',       'Technology',        'GST22TECH001', 'contact@techsupply.com', '+91-9876543210', '42 Tech Park, Bangalore, KA 560001', 'Active', 4.5),
+  ('v001', 'TechSupply Co.',       'Technology',        'GST22TECH001', 'vendor@erp.com', '+91-9876543210', '42 Tech Park, Bangalore, KA 560001', 'Active', 4.5),
   ('v002', 'Office Essentials Ltd','Office Supplies',   'GST33OFFI002', 'sales@officeessentials.com', '+91-9876543211', '15 Commercial St, Mumbai, MH 400001', 'Active', 4.2),
   ('v003', 'FastLogistics India',  'Logistics',         'GST44FAST003', 'ops@fastlogistics.com', '+91-9876543212', '8 Industrial Area, Delhi, DL 110001', 'Active', 3.8),
   ('v004', 'Green Energy Solutions','Energy',           'GST55GREE004', 'info@greenenergy.com', '+91-9876543213', '22 Solar Lane, Hyderabad, TS 500001', 'Inactive', 4.0)
