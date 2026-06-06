@@ -14,12 +14,12 @@ export default function Approvals() {
   const [remarks, setRemarks] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
 
-  const pending  = approvals.filter((a) => a.status === 'pending');
-  const decided  = approvals.filter((a) => a.status !== 'pending');
+  const pending = approvals.filter((a) => a.status === 'pending');
+  const decided = approvals.filter((a) => a.status !== 'pending');
 
-  const getQuotation  = (qid: string) => quotations.find((q) => q.id === qid);
-  const getRFQ        = (rid: string) => rfqs.find((r) => r.id === rid);
-  const getPOForQuot  = (qid: string) => pos.find((p) => p.quotationId === qid);
+  const getQuotation = (qid: string) => quotations.find((q) => q.id === qid);
+  const getRFQ = (rid: string) => rfqs.find((r) => r.id === rid);
+  const getPOForQuot = (qid: string) => pos.find((p) => p.quotationId === qid);
 
   const fmtC = (n: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
@@ -75,8 +75,8 @@ export default function Approvals() {
       ) : (
         <div className="space-y-4">
           {pending.map((appr) => {
-            const quot    = getQuotation(appr.quotationId);
-            const rfq     = getRFQ(appr.rfqId);
+            const quot = getQuotation(appr.quotationId);
+            const rfq = getRFQ(appr.rfqId);
             const isLoading = loading[appr.id];
 
             return (

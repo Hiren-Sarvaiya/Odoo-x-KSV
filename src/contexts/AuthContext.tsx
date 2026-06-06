@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         actorName: current.name,
         actorId: current.id,
         type: 'auth'
-      }).catch(() => {});
+      }).catch(() => { });
     }
     db.setCurrentUser(null);
     setUser(null);

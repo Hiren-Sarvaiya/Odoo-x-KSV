@@ -28,12 +28,12 @@ export default function Dashboard() {
   const vName = (id: string) => vendors.find((v) => v.id === id)?.name ?? id;
 
   const cards = [
-    { title: 'Pending Approvals', value: pendingApprovals, icon: Clock,      color: 'text-amber-600',  bg: 'bg-amber-50',   roles: ['Admin', 'Procurement Officer', 'Manager'] },
-    { title: 'Active RFQs',       value: activeRFQs,       icon: FileText,   color: 'text-blue-600',   bg: 'bg-blue-50',    roles: ['Admin', 'Procurement Officer', 'Manager', 'Vendor'] },
-    { title: 'Total POs',         value: pos.length,       icon: ShoppingCart,color: 'text-indigo-600', bg: 'bg-indigo-50',  roles: ['Admin', 'Procurement Officer', 'Manager', 'Vendor'] },
-    { title: 'Total Invoices',    value: invoices.length,  icon: Receipt,    color: 'text-emerald-600', bg: 'bg-emerald-50', roles: ['Admin', 'Procurement Officer', 'Manager'] },
-    { title: 'Active Vendors',    value: vendors.filter((v) => v.status === 'Active').length, icon: Store, color: 'text-violet-600', bg: 'bg-violet-50', roles: ['Admin', 'Procurement Officer'] },
-    { title: 'Pending Invoices',  value: invoices.filter((i) => i.status === 'Draft' || i.status === 'Sent').length, icon: TrendingUp, color: 'text-orange-600', bg: 'bg-orange-50', roles: ['Admin', 'Procurement Officer', 'Manager'] },
+    { title: 'Pending Approvals', value: pendingApprovals, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50', roles: ['Admin', 'Procurement Officer', 'Manager'] },
+    { title: 'Active RFQs', value: activeRFQs, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50', roles: ['Admin', 'Procurement Officer', 'Manager', 'Vendor'] },
+    { title: 'Total POs', value: pos.length, icon: ShoppingCart, color: 'text-indigo-600', bg: 'bg-indigo-50', roles: ['Admin', 'Procurement Officer', 'Manager', 'Vendor'] },
+    { title: 'Total Invoices', value: invoices.length, icon: Receipt, color: 'text-emerald-600', bg: 'bg-emerald-50', roles: ['Admin', 'Procurement Officer', 'Manager'] },
+    { title: 'Active Vendors', value: vendors.filter((v) => v.status === 'Active').length, icon: Store, color: 'text-violet-600', bg: 'bg-violet-50', roles: ['Admin', 'Procurement Officer'] },
+    { title: 'Pending Invoices', value: invoices.filter((i) => i.status === 'Draft' || i.status === 'Sent').length, icon: TrendingUp, color: 'text-orange-600', bg: 'bg-orange-50', roles: ['Admin', 'Procurement Officer', 'Manager'] },
   ].filter((c) => user && (c.roles as string[]).includes(user.role));
 
   return (

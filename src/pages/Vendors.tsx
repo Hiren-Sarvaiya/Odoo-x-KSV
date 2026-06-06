@@ -18,7 +18,7 @@ const SC: Record<VendorStatus, string> = { Active: 'bg-emerald-100 text-emerald-
 const empty = (): Omit<Vendor, 'id' | 'createdAt' | 'rating'> => ({ name: '', category: 'IT', gstNumber: '', email: '', phone: '', address: '', status: 'Active' });
 
 function Stars({ r }: { r: number }) {
-  return <div className="flex items-center gap-0.5">{[1,2,3,4,5].map((s) => <Star key={s} className={cn('w-3.5 h-3.5', s <= Math.round(r) ? 'fill-amber-400 text-amber-400' : 'text-gray-200 fill-gray-200')} />)}<span className="text-xs text-gray-500 ml-1">{r.toFixed(1)}</span></div>;
+  return <div className="flex items-center gap-0.5">{[1, 2, 3, 4, 5].map((s) => <Star key={s} className={cn('w-3.5 h-3.5', s <= Math.round(r) ? 'fill-amber-400 text-amber-400' : 'text-gray-200 fill-gray-200')} />)}<span className="text-xs text-gray-500 ml-1">{r.toFixed(1)}</span></div>;
 }
 
 export default function Vendors() {

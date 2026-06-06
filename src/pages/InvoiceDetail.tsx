@@ -81,7 +81,7 @@ export default function InvoiceDetail() {
             {(user?.role === 'Procurement Officer' || user?.role === 'Admin') && (
               <Select value={inv.status} onValueChange={async (v) => { try { await upsertInvoice({ ...inv, status: v as InvoiceStatus }); await addLog(`Invoice ${inv.invoiceNumber} → ${v}`, 'invoice', inv.id); toast.success('Status updated'); } catch { toast.error('Failed to update status'); } }}>
                 <SelectTrigger className="w-32 h-9 text-xs print:hidden"><SelectValue /></SelectTrigger>
-                <SelectContent>{(['Draft','Sent','Paid','Overdue'] as InvoiceStatus[]).map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                <SelectContent>{(['Draft', 'Sent', 'Paid', 'Overdue'] as InvoiceStatus[]).map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             )}
             <Button onClick={() => setShowEmail(true)} variant="outline" className="gap-2 print:hidden"><Mail className="w-4 h-4" />Send via Email</Button>

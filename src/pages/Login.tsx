@@ -26,10 +26,10 @@ const ROLE_DESC: Record<Role, string> = {
 };
 
 const DEMO = [
-  { label: 'Admin',   email: 'admin@demo.com',   password: 'admin123',   color: 'border-rose-200 text-rose-700 hover:bg-rose-50' },
-  { label: 'Officer', email: 'officer@demo.com',  password: 'officer123', color: 'border-blue-200 text-blue-700 hover:bg-blue-50' },
-  { label: 'Manager', email: 'manager@demo.com',  password: 'manager123', color: 'border-amber-200 text-amber-700 hover:bg-amber-50' },
-  { label: 'Vendor',  email: 'vendor@demo.com',   password: 'vendor123',  color: 'border-emerald-200 text-emerald-700 hover:bg-emerald-50' },
+  { label: 'Admin', email: 'admin@demo.com', password: 'admin123', color: 'border-rose-200 text-rose-700 hover:bg-rose-50' },
+  { label: 'Officer', email: 'officer@demo.com', password: 'officer123', color: 'border-blue-200 text-blue-700 hover:bg-blue-50' },
+  { label: 'Manager', email: 'manager@demo.com', password: 'manager123', color: 'border-amber-200 text-amber-700 hover:bg-amber-50' },
+  { label: 'Vendor', email: 'vendor@demo.com', password: 'vendor123', color: 'border-emerald-200 text-emerald-700 hover:bg-emerald-50' },
 ];
 
 export default function Login() {

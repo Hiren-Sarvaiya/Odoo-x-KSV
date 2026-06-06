@@ -17,7 +17,7 @@ export default function Reports() {
   pos.forEach((p) => { vendorSpend[p.vendorId] = (vendorSpend[p.vendorId] ?? 0) + p.total; });
   const topV = vendors.find((v) => v.id === Object.entries(vendorSpend).sort((a, b) => b[1] - a[1])[0]?.[0]);
 
-  const referenceDate = pos.length 
+  const referenceDate = pos.length
     ? new Date(Math.max(...pos.map(p => new Date(p.createdAt).getTime())))
     : new Date();
 
@@ -67,19 +67,19 @@ export default function Reports() {
         <Card className="border-0 shadow-sm">
           <CardHeader><CardTitle className="text-base font-semibold text-gray-800">Monthly Procurement Spend</CardTitle></CardHeader>
           <CardContent>
-                    {monthlyData.every(d => d.spend === 0) ? (
-          <div className="h-60 flex items-center justify-center text-gray-400 text-sm">No procurement spend data for recent months</div>
-        ) : (
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#9ca3af' }} />
-              <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-              <Tooltip formatter={(v: number) => [fmtC(v), 'Spend']} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: 12 }} />
-              <Bar dataKey="spend" fill="#1D4ED8" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
+            {monthlyData.every(d => d.spend === 0) ? (
+              <div className="h-60 flex items-center justify-center text-gray-400 text-sm">No procurement spend data for recent months</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#9ca3af' }} />
+                  <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: number) => [fmtC(v), 'Spend']} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: 12 }} />
+                  <Bar dataKey="spend" fill="#1D4ED8" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">

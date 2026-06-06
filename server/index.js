@@ -18,7 +18,7 @@ async function insertAuditLog(action, actorName, actorId, type, referenceId = nu
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [logId, action, actorName, actorId, type, timestamp, referenceId]
     );
-    
+
     // Also push a notification for relevant actions
     await query(
       `INSERT INTO notifications (id, message, read, timestamp, type)
@@ -43,7 +43,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (user.password !== password) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-    
+
     await insertAuditLog(`User ${user.name} logged in`, user.name, user.id, 'auth');
     res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (err) {
@@ -60,13 +60,13 @@ app.post('/api/auth/signup', async (req, res) => {
     if (check.length > 0) {
       return res.status(400).json({ error: 'Email already in use' });
     }
-    
+
     const id = 'u_' + Date.now();
     await query(
       'INSERT INTO users (id, name, email, password, role) VALUES ($1, $2, $3, $4, $5)',
       [id, name, email, password, role]
     );
-    
+
     await insertAuditLog(`New user account created: ${name} (${role})`, name, id, 'auth');
     res.status(201).json({ id, name, email, role });
   } catch (err) {
@@ -82,7 +82,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     const user = rows[0];
     const actorName = user ? user.name : 'Unknown User';
     const actorId = user ? user.id : 'unknown';
-    
+
     await insertAuditLog(`Password reset link requested for email: ${email}`, actorName, actorId, 'auth');
     res.json({ success: true });
   } catch (err) {
@@ -174,7 +174,7 @@ app.get('/api/rfqs', async (req, res) => {
   try {
     const rfqs = await query('SELECT * FROM rfqs ORDER BY created_at DESC');
     const items = await query('SELECT * FROM rfq_line_items');
-    
+
     const formatted = rfqs.map(r => ({
       id: r.id,
       title: r.title,
@@ -194,7 +194,7 @@ app.get('/api/rfqs', async (req, res) => {
           unit: li.unit
         }))
     }));
-    
+
     res.json(formatted);
   } catch (err) {
     console.error(err);
@@ -207,14 +207,14 @@ app.post('/api/rfqs', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    
+
     await client.query(
       `INSERT INTO rfqs (id, title, description, deadline, status, assigned_vendors, created_by, created_at, attachments)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT (id) DO UPDATE SET title=$2, description=$3, deadline=$4, status=$5, assigned_vendors=$6, attachments=$9`,
       [id, title, description || '', deadline, status, assignedVendors, createdBy, createdAt || new Date().toISOString(), JSON.stringify(attachments || [])]
     );
-    
+
     await client.query('DELETE FROM rfq_line_items WHERE rfq_id = $1', [id]);
     for (const li of lineItems) {
       await client.query(
@@ -222,7 +222,7 @@ app.post('/api/rfqs', async (req, res) => {
         [li.id, id, li.product, li.quantity, li.unit || 'units']
       );
     }
-    
+
     await client.query('COMMIT');
     res.json({ success: true });
   } catch (err) {
@@ -240,7 +240,7 @@ app.get('/api/quotations', async (req, res) => {
   try {
     const qRows = await query('SELECT * FROM quotations ORDER BY submitted_at DESC');
     const items = await query('SELECT * FROM quotation_line_items');
-    
+
     const formatted = qRows.map(r => ({
       id: r.id,
       rfqId: r.rfq_id,
@@ -258,7 +258,7 @@ app.get('/api/quotations', async (req, res) => {
           unitPrice: Number(li.unit_price)
         }))
     }));
-    
+
     res.json(formatted);
   } catch (err) {
     console.error(err);
@@ -271,14 +271,14 @@ app.post('/api/quotations', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    
+
     await client.query(
       `INSERT INTO quotations (id, rfq_id, vendor_id, delivery_days, notes, status, submitted_at, submitted_by, total_amount)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT (id) DO UPDATE SET delivery_days=$4, notes=$5, status=$6, total_amount=$9`,
       [id, rfqId, vendorId, deliveryDays, notes || '', status, submittedAt || new Date().toISOString(), submittedBy, totalAmount]
     );
-    
+
     await client.query('DELETE FROM quotation_line_items WHERE quotation_id = $1', [id]);
     for (const li of lineItems) {
       await client.query(
@@ -286,7 +286,7 @@ app.post('/api/quotations', async (req, res) => {
         [id, li.rfqItemId, li.unitPrice]
       );
     }
-    
+
     await client.query('COMMIT');
     res.json({ success: true });
   } catch (err) {
@@ -343,7 +343,7 @@ app.get('/api/purchase-orders', async (req, res) => {
   try {
     const poRows = await query('SELECT * FROM purchase_orders ORDER BY created_at DESC');
     const items = await query('SELECT * FROM po_line_items');
-    
+
     const formatted = poRows.map(r => ({
       id: r.id,
       poNumber: r.po_number,
@@ -367,7 +367,7 @@ app.get('/api/purchase-orders', async (req, res) => {
           total: Number(li.total)
         }))
     }));
-    
+
     res.json(formatted);
   } catch (err) {
     console.error(err);
@@ -380,14 +380,14 @@ app.post('/api/purchase-orders', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    
+
     await client.query(
       `INSERT INTO purchase_orders (id, po_number, rfq_id, quotation_id, vendor_id, subtotal, gst, total, status, created_at, created_by, approved_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        ON CONFLICT (id) DO UPDATE SET status=$9, approved_by=$12`,
       [id, poNumber, rfqId, quotationId, vendorId, subtotal, gst, total, status, createdAt || new Date().toISOString(), createdBy, approvedBy || null]
     );
-    
+
     await client.query('DELETE FROM po_line_items WHERE po_id = $1', [id]);
     for (const li of lineItems) {
       await client.query(
@@ -395,7 +395,7 @@ app.post('/api/purchase-orders', async (req, res) => {
         [id, li.product, li.quantity, li.unit || 'units', li.unitPrice, li.total]
       );
     }
-    
+
     await client.query('COMMIT');
     res.json({ success: true });
   } catch (err) {
@@ -413,7 +413,7 @@ app.get('/api/invoices', async (req, res) => {
   try {
     const invRows = await query('SELECT * FROM invoices ORDER BY created_at DESC');
     const items = await query('SELECT * FROM invoice_line_items');
-    
+
     const formatted = invRows.map(r => ({
       id: r.id,
       invoiceNumber: r.invoice_number,
@@ -435,7 +435,7 @@ app.get('/api/invoices', async (req, res) => {
           total: Number(li.total)
         }))
     }));
-    
+
     res.json(formatted);
   } catch (err) {
     console.error(err);
@@ -448,14 +448,14 @@ app.post('/api/invoices', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    
+
     await client.query(
       `INSERT INTO invoices (id, invoice_number, po_id, vendor_id, subtotal, gst, total, due_date, status, created_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        ON CONFLICT (id) DO UPDATE SET status=$9`,
       [id, invoiceNumber, poId, vendorId, subtotal, gst, total, dueDate, status, createdAt || new Date().toISOString()]
     );
-    
+
     await client.query('DELETE FROM invoice_line_items WHERE invoice_id = $1', [id]);
     for (const li of lineItems) {
       await client.query(
@@ -463,7 +463,7 @@ app.post('/api/invoices', async (req, res) => {
         [id, li.product, li.quantity, li.unit || 'units', li.unitPrice, li.total]
       );
     }
-    
+
     await client.query('COMMIT');
     res.json({ success: true });
   } catch (err) {
