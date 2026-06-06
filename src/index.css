@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -23,7 +25,7 @@
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
-    --radius: 0.5rem;
+    --radius: 0.625rem;
     --chart-1: 221 83% 53%;
     --chart-2: 173 58% 39%;
     --chart-3: 43 74% 66%;
@@ -33,20 +35,24 @@
 
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
 
-  html, body {
-    @apply bg-gray-50 text-gray-900;
-    font-family: Inter, system-ui, -apple-system, sans-serif;
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    margin: 0;
-    min-height: 100vh;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    scroll-behavior: smooth;
   }
 
   body {
+    @apply bg-gray-50 text-gray-900;
+    margin: 0;
+    min-height: 100vh;
     display: block !important;
     place-items: unset !important;
+    line-height: 1.5;
   }
 
   #root {
@@ -54,5 +60,26 @@
     max-width: none !important;
     padding: 0 !important;
     text-align: left !important;
+  }
+
+  /* Clean scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+  /* Focus ring */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  /* Smooth card hover */
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
   }
 }
