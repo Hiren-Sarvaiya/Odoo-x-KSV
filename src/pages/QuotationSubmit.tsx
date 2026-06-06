@@ -4,7 +4,7 @@ import { ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
-import { genId } from '../lib/storage';
+import { genId } from '../lib/api';
 import type { Quotation } from '../types';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';

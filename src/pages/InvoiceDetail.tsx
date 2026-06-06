@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Printer, Mail } from 'lucide-react';
+import { ChevronLeft, Printer, Mail, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -50,11 +50,24 @@ export default function InvoiceDetail() {
 
   const handlePrint = async () => {
     try {
-      await addLog(`Printed Invoice ${inv.invoiceNumber} (PDF Download)`, 'invoice', inv.id);
-    } catch (e) {
-      console.error(e);
-    }
+      await addLog(`Invoice ${inv.invoiceNumber} sent to printer`, 'invoice', inv.id);
+    } catch (e) { console.error(e); }
     window.print();
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      await addLog(`Invoice ${inv.invoiceNumber} downloaded as PDF`, 'invoice', inv.id);
+    } catch (e) { console.error(e); }
+    // Use browser print-to-PDF in a new window for clean download
+    const printContent = document.getElementById('invoice-print')?.innerHTML;
+    if (!printContent) return;
+    const win = window.open('', '_blank');
+    if (!win) { window.print(); return; }
+    win.document.write(`<!DOCTYPE html><html><head><title>${inv.invoiceNumber}</title><style>body{font-family:sans-serif;margin:40px;color:#111;}table{width:100%;border-collapse:collapse;}th,td{padding:8px 12px;text-align:left;}th{background:#f9fafb;font-weight:600;}tr{border-bottom:1px solid #f0f0f0;}.text-right{text-align:right;}.font-bold{font-weight:700;}</style></head><body>${printContent}</body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); win.close(); }, 400);
   };
 
   return (
@@ -72,7 +85,8 @@ export default function InvoiceDetail() {
               </Select>
             )}
             <Button onClick={() => setShowEmail(true)} variant="outline" className="gap-2 print:hidden"><Mail className="w-4 h-4" />Send via Email</Button>
-            <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 print:hidden"><Printer className="w-4 h-4" />Download PDF</Button>
+            <Button onClick={handlePrint} variant="outline" className="gap-2 print:hidden border-gray-300"><Printer className="w-4 h-4" />Print Invoice</Button>
+            <Button onClick={handleDownloadPDF} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 print:hidden"><Download className="w-4 h-4" />Download PDF</Button>
           </div>
         </div>
         <div id="invoice-print" className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
