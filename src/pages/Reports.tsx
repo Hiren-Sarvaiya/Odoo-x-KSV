@@ -17,8 +17,12 @@ export default function Reports() {
   pos.forEach((p) => { vendorSpend[p.vendorId] = (vendorSpend[p.vendorId] ?? 0) + p.total; });
   const topV = vendors.find((v) => v.id === Object.entries(vendorSpend).sort((a, b) => b[1] - a[1])[0]?.[0]);
 
+  const referenceDate = pos.length 
+    ? new Date(Math.max(...pos.map(p => new Date(p.createdAt).getTime())))
+    : new Date();
+
   const monthlyData = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(); d.setMonth(d.getMonth() - (5 - i));
+    const d = new Date(referenceDate); d.setMonth(d.getMonth() - (5 - i));
     const month = d.toLocaleDateString('en-US', { month: 'short' });
     const spend = pos.filter((p) => { const pd = new Date(p.createdAt); return pd.getMonth() === d.getMonth() && pd.getFullYear() === d.getFullYear(); }).reduce((s, p) => s + p.total, 0);
     return { month, spend };
@@ -63,15 +67,19 @@ export default function Reports() {
         <Card className="border-0 shadow-sm">
           <CardHeader><CardTitle className="text-base font-semibold text-gray-800">Monthly Procurement Spend</CardTitle></CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#9ca3af' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(v: number) => [fmtC(v), 'Spend']} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: 12 }} />
-                <Bar dataKey="spend" fill="#1D4ED8" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+                    {monthlyData.every(d => d.spend === 0) ? (
+          <div className="h-60 flex items-center justify-center text-gray-400 text-sm">No procurement spend data for recent months</div>
+        ) : (
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#9ca3af' }} />
+              <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+              <Tooltip formatter={(v: number) => [fmtC(v), 'Spend']} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: 12 }} />
+              <Bar dataKey="spend" fill="#1D4ED8" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
